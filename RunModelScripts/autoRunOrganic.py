@@ -43,8 +43,6 @@ def getPars(sim):
     pars2['alpha']=2
     pars2['n']= 1.7
     pars2['m']=1-1/pars2['n']
-    # pars2['theta_org']=0.51*(1-pars2['thetaS'])
-    # pars2['theta_min'] = 1-pars2['thetaS']-pars2['theta_org']
     pars2['theta_org']=1.0*(1-pars2['thetaS'])
     pars2['theta_mineral'] = (1-pars2['thetaS'])-pars2['theta_org']
     pars2['Ks']= 9.4e-19
@@ -82,14 +80,14 @@ def auto(theta1,theta2,theta3,nYears):
 
     opts={}
     opts['infiltration']=0.   
-    opts['gravity']=0.       # 0. for horizontal; 1. for vertical
+    opts['gravity']=1.       # 0. for horizontal; 1. for vertical
     opts['cryoK']=0.      # 0. flow based on psie; 1. flow based on psif 
     opts['cryoGradient']=0.      # 0. flow based on psie; 1. flow based on psif 
     opts['withadv']=0.       # 0. turn off advection; 1. turn on advection
     opts['conductionTop']=1. # 0. no conduction on upper BC; 1. conduction based on TTop
     opts['conductionBot']=0. # 0. no conduction on lower BC; 1. conduction based on TBot
     opts['simulateFlow'] = False
-    opts['simulateTransport'] = False
+    opts['simulateTransport'] = True
     opts['freeDrainage']=0.          # 0. no flow lower BC, 1.0 free draining lowerBC
     sim.opts=opts
 
@@ -110,16 +108,24 @@ def auto(theta1,theta2,theta3,nYears):
 
     y=4
     t=np.arange(0,y*365,1) # days
+    # t=t*86400. # Convert to seconds
     nt=len(t)
     dt=t[1]-t[0]
     sim.tGrid(0,y*365,dt)
 
+
+    # ## Soil Parameters
+
+    # Mineral Layer (Silty Clay Loam  (Layer 0)
     sim.readPars()
 
     pars0,pars1,pars2=getPars(sim)
     # Distribute parameters by layer:
 
+    # This way we have one unique parameter for each depth, which is assigned in this loop.
+    # Here I am just making them all the same, so this part of the code would need to be modified:
     parsD={}
+    #parsD=MakeDictArray()
     for key in sim.pars:
         parsD[key]=np.zeros(nz)+sim.pars[key]
         #assign parameters based on layer
@@ -145,8 +151,8 @@ def auto(theta1,theta2,theta3,nYears):
 
     # Winter modified sine wave
     TTop = -np.sin(2* np.pi * (t) / 365) * 13.5 - 1.5
-    dummy= -np.sin(2* np.pi * (t) / 365) * 7- 1.5
-    TTop[TTop<-1]=dummy[TTop<-1]
+    sin2= -np.sin(2* np.pi * (t) / 365) * 7- 1.5
+    TTop[TTop<-1]=sin2[TTop<-1]
 
     sim.setBCs(TTop=TTop)
 

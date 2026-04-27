@@ -15,7 +15,7 @@ def getPars(sim):
     pars0=sim.pars.copy()
     pars0['alpha']=0.839
     pars0['n']= 1.5205
-    pars0['m']=1-1/pars0['n']
+    pars0['m']= 1-1/pars0['n']
     pars0['thetaS']= 0.482
     pars0['thetaR'] = 0.09
     pars0['Ks']=9.4e-19 
@@ -54,14 +54,14 @@ def auto(theta1,nYears):
 
     opts={}
     opts['infiltration']=0.   
-    opts['gravity']=0.       # 0. for horizontal; 1. for vertical
+    opts['gravity']=1.       # 0. for horizontal; 1. for vertical
     opts['cryoK']=0.      # 0. flow based on psie; 1. flow based on psif 
     opts['cryoGradient']=0.      # 0. flow based on psie; 1. flow based on psif 
     opts['withadv']=0.       # 0. turn off advection; 1. turn on advection
     opts['conductionTop']=1. # 0. no conduction on upper BC; 1. conduction based on TTop
     opts['conductionBot']=0. # 0. no conduction on lower BC; 1. conduction based on TBot
     opts['simulateFlow'] = False
-    opts['simulateTransport'] = False
+    opts['simulateTransport'] = True
     opts['freeDrainage']=0.          # 0. no flow lower BC, 1.0 free draining lowerBC
     sim.opts=opts
 
@@ -73,6 +73,7 @@ def auto(theta1,nYears):
     bz=np.hstack([0, np.cumsum(dz)])
     z=(bz[:-1]+bz[1:])/2
     zMax=bz[-1]
+
     sim.zGrid(bz)
 
     layers=np.zeros(nz)
@@ -81,6 +82,7 @@ def auto(theta1,nYears):
 
     y=4
     t=np.arange(0,y*365,1) # days
+    # t=t*86400. # Convert to seconds
     nt=len(t)
     dt=t[1]-t[0]
     sim.tGrid(0,y*365,dt)
@@ -92,12 +94,16 @@ def auto(theta1,nYears):
     sim.readPars()
 
     pars0=getPars(sim)
-  to be modified:
+    # Distribute parameters by layer:
+
+    # This way we have one unique parameter for each depth, which is assigned in this loop.
+    # Here I am just making them all the same, so this part of the code would need to be modified:
     parsD={}
 
     for key in sim.pars:
         parsD[key]=np.zeros(nz)+sim.pars[key]
-        
+        #assign parameters based on layers
+        parsD[key][layers == 0] = pars0[key]
 
     sim.pars=parsD
     
@@ -115,8 +121,8 @@ def auto(theta1,nYears):
 
     # Winter modified sine wave
     TTop = -np.sin(2* np.pi * (t) / 365) * 13.5 - 1.5
-    dummy= -np.sin(2* np.pi * (t) / 365) * 7- 1.5
-    TTop[TTop<-1]=dummy[TTop<-1]
+    sin2= -np.sin(2* np.pi * (t) / 365) * 7- 1.5
+    TTop[TTop<-1]=sin2[TTop<-1]
 
     sim.setBCs(TTop=TTop)
 

@@ -1,7 +1,8 @@
 # SoilMoisture_ActiveLayerThickness
 This repository provides the scripts associated with the manuscript The Role of Soil Moisture on Active Layer Thickness which uses the soilice model. 
 
-In RunModelScripts the scripts used to run the model are provided in the auto.py files. Various water content scenarios were prescribed using the batch.py files. 
-The model outputs are available in ModelOutputs for all simulations, provided in .dill format. 
+The RunModelScripts folder contains the automated scripts used to run soilice. Soil parameters are set and boundary condiitons are set wihtin this function. 
 
-The decription of the soilice model can be found here. 
+The model outputs presented in the manuscript are available in ModelOutputs for all simulations, provided in .dill format. 
+
+The decription of the soilice model can be found in the GitHub repository here. 
