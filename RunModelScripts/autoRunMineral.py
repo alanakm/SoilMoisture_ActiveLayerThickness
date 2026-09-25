@@ -68,8 +68,8 @@ def auto(theta1,nYears):
 
     nz=1500
     dz=np.zeros(nz)+0.01
-    dz[0:1000] = 0.01 # 0 -5
-    dz[1000:1500] = 0.02 # 5m - 10m
+    dz[0:1000] = 0.01 # 0 -10
+    dz[1000:1500] = 0.02 # 10m - 20m
     bz=np.hstack([0, np.cumsum(dz)])
     z=(bz[:-1]+bz[1:])/2
     zMax=bz[-1]
@@ -124,7 +124,7 @@ def auto(theta1,nYears):
     sin2= -np.sin(2* np.pi * (t) / 365) * 7- 1.5
     TTop[TTop<-1]=sin2[TTop<-1]
 
-    sim.setBCs(TTop=TTop)
+    sim.setBCs(TTop=TTop,jBotBC = -4579.2)
 
     # --- Run model ---
     years=int(nYears/4)
@@ -133,7 +133,7 @@ def auto(theta1,nYears):
         sim.setICs(T0=out.T[-1,:],psi0=out.psie[-1,:])
 
     # --- Save to pickle ---
-    outdir = Path.home() / "Desktop" / "SOILICE" / "TotalMineral_Output" / "Outputs"
+    outdir = Path.home() / "Desktop" / "SOILICE_P2" / "TotalMineral_Output" / "Outputs" / "FixedK_Geothermal"
     outdir.mkdir(parents=True, exist_ok=True)
 
     fname = (

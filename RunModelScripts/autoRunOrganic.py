@@ -4,7 +4,7 @@ import matplotlib.pyplot as pl
 from pathlib import Path
 
 from soilice.src_soil import MakeDictFloat, MakeDictArray
-from soilice.src_constitutiveFunctions import GCEFun, thetaFun, thermalKfun
+# from soilice.src_constitutiveFunctions import GCEFun, thetaFun, thermalKfun
 from soilice import model
 from soilice import save, load
 
@@ -34,7 +34,6 @@ def getPars(sim):
     pars1['theta_org']=1.0*(1-pars1['thetaS'])
     pars1['theta_mineral'] = (1-pars1['thetaS'])-pars1['theta_org']
     pars1['Ks']= 9.4e-19
-
 
     # Organic Layer 2 (Layer 2)
     pars2=sim.pars.copy()
@@ -91,21 +90,20 @@ def auto(theta1,theta2,theta3,nYears):
     opts['freeDrainage']=0.          # 0. no flow lower BC, 1.0 free draining lowerBC
     sim.opts=opts
 
-    nz=750
+    nz=1250
     dz=np.zeros(nz)+0.01
-    dz[0:500] = 0.01 # 0 -5
-    dz[500:750] = 0.02 # 5m - 10m
+    dz[:500] = 0.01 # 0 -5
+    dz[500:] = 0.02 # 5m - 20m
     bz=np.hstack([0, np.cumsum(dz)])
     z=(bz[:-1]+bz[1:])/2
     zMax=bz[-1]
     sim.zGrid(bz)
     
     layers=np.zeros(nz)
-    layers[0:30]=2.
-    layers[0:15]=1.
+    layers[0:30]=2. # first 30 cm
+    layers[0:15]=1. # first 15 cm
 
     # ## Time grid
-
     y=4
     t=np.arange(0,y*365,1) # days
     # t=t*86400. # Convert to seconds
@@ -154,8 +152,8 @@ def auto(theta1,theta2,theta3,nYears):
     sin2= -np.sin(2* np.pi * (t) / 365) * 7- 1.5
     TTop[TTop<-1]=sin2[TTop<-1]
 
-    sim.setBCs(TTop=TTop)
-
+    sim.setBCs(TTop=TTop, jBotBC = -4579.2)
+ 
     # --- Run model ---
     years=int(nYears/4)
     for year in range(years):
@@ -163,7 +161,7 @@ def auto(theta1,theta2,theta3,nYears):
         sim.setICs(T0=out.T[-1,:],psi0=out.psie[-1,:])
 
     # --- Save to pickle ---
-    outdir = Path.home() / "Desktop" / "SOILICE" / "UpperOrganic_Output" / "Outputs"
+    outdir = Path.home() / "Desktop" / "SOILICE_P2" / "TotalOrganic_Output" / "Output"/ "FixedK_Geothermal_20m"
     outdir.mkdir(parents=True, exist_ok=True)
 
     fname = (
